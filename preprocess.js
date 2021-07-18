@@ -69,8 +69,8 @@ async function getFullYearTransaction(year) {
   console.log([...map].sort((a, b) => b[1].count - a[1].count).map(x => {
     return { ...x[1], name: x[0] }
   }))
-  doWriteFile(year, trans)
-  doWriteFile(`${year}-ranking`, [...map].sort((a, b) => b[1].count - a[1].count).map(x => {
+  doWriteFile(`byYear/${year}`, trans)
+  doWriteFile(`byYear/${year}-ranking`, [...map].sort((a, b) => b[1].count - a[1].count).map(x => {
     return { ...x[1], name: x[0] }
   })) //Object.fromEntries(map))
   return trans
@@ -132,7 +132,7 @@ function transactionByHOS(v) {
   return doRequest(`https://www.housingauthority.gov.hk/json/transaction-record/byEstate/${v.districtId}/${v.aplySysId}.json`).then((response) => {
     console.log(`${v.name}-${v.estate}`)
     const { result } = response
-    doWriteFile(`${v.estate}`, response)
+    doWriteFile(`data/${v.estate}`, response)
     result.sort(function(a, b) {
       return parseInt(a.year, 10) - parseInt(b.year, 10);
     });
