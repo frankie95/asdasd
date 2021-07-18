@@ -29,7 +29,6 @@ async function getFullYearTransaction(year) {
     const month = ("0" + x).slice(-2)
     try {
       const result = await doRequest(`https://www.housingauthority.gov.hk/json/transaction-record/byMonth/${year}/${month}.json`)
-      console.log(month)
       trans[month] = []
       result.forEach(({ district, name }) => {
         district && district.forEach((v) => {
@@ -60,18 +59,19 @@ async function getFullYearTransaction(year) {
   const map = new Map()
   temp.forEach(x => {
     if (map.has(x.name)) {
-      map.set(x.name, (map.get(x.name)) + 1)
+      map.set(x.name, { area: x.area, district: x.district, count: map.get(x.name).count + 1 })
     }
     else {
-      map.set(x.name, 1)
+      map.set(x.name, { area: x.area, district: x.district, count: 1 })
     }
 
   })
-
-  console.log(map)
+  console.log([...map].sort((a, b) => b[1].count - a[1].count).map(x => {
+    return { ...x[1], name: x[0] }
+  }))
   doWriteFile(year, trans)
-  doWriteFile(`${year}-ranking`, [...map].sort((a, b) => b[1] - a[1]).map(x => {
-    return { name: x[0], count: x[1] }
+  doWriteFile(`${year}-ranking`, [...map].sort((a, b) => b[1].count - a[1].count).map(x => {
+    return { ...x[1], name: x[0] }
   })) //Object.fromEntries(map))
   return trans
 }
@@ -132,7 +132,7 @@ function transactionByHOS(v) {
   return doRequest(`https://www.housingauthority.gov.hk/json/transaction-record/byEstate/${v.districtId}/${v.aplySysId}.json`).then((response) => {
     console.log(`${v.name}-${v.estate}`)
     const { result } = response
-    doWriteFile(`${v.name}-${v.estate}`, response)
+    doWriteFile(`${v.estate}`, response)
     result.sort(function(a, b) {
       return parseInt(a.year, 10) - parseInt(b.year, 10);
     });
